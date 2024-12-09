@@ -5,7 +5,7 @@ import os
 from data_preprocessor import load_and_preprocess_data
 from analysis import get_user_preference_summary, get_user_category_preference
 from recommendation import recommend_for_group
-from report import plot_flavor_preference, generate_wordcloud, print_insight_text
+from report import generate_report
 from data_preprocessor import preprocess_menu_details, preprocess_survey_data, validate_data, load_and_preprocess_data
 from food_preference_input import get_preference_text, input_preferences
 
@@ -88,16 +88,7 @@ def main():
                 print("해당 사용자를 찾을 수 없습니다.")
                 return
             category_analysis = get_user_category_preference(survey_df, menu_df, user_name)
-            print_insight_text(summary, category_analysis)
-            # 맛 프로파일 그래프 예시
-            if category_analysis and not category_analysis['flavor_mean'].empty:
-                plot_flavor_preference(category_analysis['flavor_mean'])
-            
-            # 워드 클라우드: 환장함 메뉴만 예시 (summary에서 top_10 중 rating=4인 메뉴)
-            top_10 = summary['top_10']
-            fav_menus = top_10[top_10 == 4].index.tolist()
-            if fav_menus:
-                generate_wordcloud(fav_menus)
+            generate_report(summary, category_analysis)
         
         elif command == "group_recommend":
             user_names = args[1:]
