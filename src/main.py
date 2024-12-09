@@ -7,26 +7,39 @@ from analysis import get_user_preference_summary, get_user_category_preference
 from recommendation import recommend_for_group
 from report import plot_flavor_preference, generate_wordcloud, print_insight_text
 from data_preprocessor import preprocess_menu_details, preprocess_survey_data, validate_data, load_and_preprocess_data
+from food_preference_input import get_preference_text, input_preferences
 
 def main():
     try:
-        # 파일 경로 설정
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        survey_path = os.path.join(base_dir, "data", "user_data.csv")
-        menu_path = os.path.join(base_dir, "data", "menu_details.csv")
-        
         # 인자 확인
-        if len(sys.argv) < 3:
+        if len(sys.argv) < 2:
             print("사용법:")
             print("  개인 리포트 조회:")
             print("    python src/main.py user_report 사용자이름")
             print("  그룹 추천:")
             print("    python src/main.py group_recommend 사용자1 사용자2 ...")
-            print("\n예시:")
-            print("  python src/main.py user_report 연누")
-            print("  python src/main.py group_recommend 연누 철수 영희")
+            print("  새로운 사용자 추가:")
+            print("    python src/main.py add_user")
             return
             
+        command = sys.argv[1]
+        
+        # add_user 명령어 처리를 가장 먼저
+        if command == "add_user":
+            result = input_preferences()
+            if result:
+                print(f"\n✅ {result}님의 음식 선호도가 성공적으로 저장되었습니다!")
+                print("\n다음 명령어로 선호도 분석을 확인해보세요:")
+                print(f"  python src/main.py user_report {result}")
+            else:
+                print("\n❌ 선호도 입력이 취소되었습니다.")
+            return
+            
+        # 기본 경로 설정 (다른 명령어들을 위한)
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        survey_path = os.path.join(os.path.dirname(base_path), 'data', 'user_data.csv')
+        menu_path = os.path.join(os.path.dirname(base_path), 'data', 'menu_details.csv')
+        
         # 파일 존재 여부 확인
         if not os.path.exists(survey_path):
             print(f"사용자 데이터 파일이 없습니다: {survey_path}")
@@ -57,17 +70,16 @@ def main():
             print(f"설문에 있는 메뉴 중 상세정보가 없는 메뉴가 있습니다: {missing_menus}")
             return
             
-        # 간단한 CLI 인터페이스 예시
+        # 간단한 CLI 인터페이스 
         # 예: python main.py user_report 홍길동
         #    python main.py group_recommend 홍길동 김민수 이영희
         args = sys.argv[1:]
-        if len(args) < 2:
+        if len(args) < 1:
             print("Usage:")
             print("  python main.py user_report [username]")
             print("  python main.py group_recommend [username1] [username2] ...")
+            print("  python main.py add_user")
             return
-        
-        command = args[0]
         
         if command == "user_report":
             user_name = args[1]
@@ -94,6 +106,7 @@ def main():
                 print("해당 사용자들을 찾을 수 없습니다.")
                 return
             print("그룹 선호도 기반 추천 메뉴 Top 10:", recommended.index.tolist())
+        
         else:
             print("알 수 없는 명령어입니다.")
 
