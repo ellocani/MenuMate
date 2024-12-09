@@ -52,7 +52,7 @@ def get_user_preference_summary(survey_df: pd.DataFrame, menu_df: pd.DataFrame, 
 def get_user_category_preference(survey_df: pd.DataFrame, menu_df: pd.DataFrame, user_name: str):
     """
     특정 사용자에 대해 음식종류, 맛 프로파일, 조리방식별 평균 선호도 분석
-    Unknown 값은 통계에서 제외
+    맛 프로파일은 개별 속성으로 분리하여 분석
     """
     user_data = survey_df[survey_df['이름'] == user_name]
     if user_data.empty:
@@ -65,18 +65,25 @@ def get_user_category_preference(survey_df: pd.DataFrame, menu_df: pd.DataFrame,
     # 메뉴 속성과 조인
     merged = pd.merge(user_scores, menu_df, on="메뉴", how="left")
     
-    # Unknown 값을 제외한 통계 계산
-    category_mean = merged[merged['분류'] != 'Unknown'].groupby('분류')['rating'].mean().sort_values(ascending=False)
-    flavor_mean = merged[merged['맛 프로파일'] != 'Unknown'].groupby('맛 프로파일')['rating'].mean().sort_values(ascending=False)
-    cooking_mean = merged[merged['조리 방식'] != 'Unknown'].groupby('조리 방식')['rating'].mean().sort_values(ascending=False)
+    # 맛 프로파일 분리 및 집계
+    flavor_scores = {}
+    for idx, row in merged.iterrows():
+        if row['맛 프로파일'] != 'Unknown':
+            flavors = row['맛 프로파일'].split('/')
+            for flavor in flavors:
+                if flavor not in flavor_scores:
+                    flavor_scores[flavor] = []
+                flavor_scores[flavor].append(row['rating'])
     
-    # 결과가 비어있는지 확인
-    if category_mean.empty:
-        print("분류 정보가 충분하지 않습니다.")
-    if flavor_mean.empty:
-        print("맛 프로파일 정보가 충분하지 않습니다.")
-    if cooking_mean.empty:
-        print("조리 방식 정보가 충분하지 않습니다.")
+    # 각 맛 프로파일별 평균 계산
+    flavor_mean = pd.Series({
+        flavor: sum(scores)/len(scores) 
+        for flavor, scores in flavor_scores.items()
+    }).sort_values(ascending=False)
+    
+    # 기존 카테고리와 조리방식 분석
+    category_mean = merged[merged['분류'] != 'Unknown'].groupby('분류')['rating'].mean().sort_values(ascending=False)
+    cooking_mean = merged[merged['조리 방식'] != 'Unknown'].groupby('조리 방식')['rating'].mean().sort_values(ascending=False)
     
     return {
         "category_mean": category_mean,

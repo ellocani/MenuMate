@@ -25,12 +25,23 @@ def plot_flavor_preference(flavor_mean: pd.Series):
     # 한글 폰트 설정
     set_matplotlib_korean_font()
     
-    plt.figure(figsize=(12, 6))  # 그래프 크기 조정
-    flavor_mean.plot(kind='bar', title='맛 프로파일별 평균 점수')
+    plt.figure(figsize=(12, 6))
+    bars = plt.bar(range(len(flavor_mean)), flavor_mean.values)
+    plt.title('맛 프로파일별 평균 선호도')
     plt.ylabel('평균 선호도')
     plt.xlabel('맛 프로파일')
-    plt.xticks(rotation=45, ha='right')  # x축 레이블 회전 및 정렬
-    plt.tight_layout()  # 레이아웃 조정
+    
+    # x축 레이블 설정
+    plt.xticks(range(len(flavor_mean)), flavor_mean.index, rotation=45, ha='right')
+    
+    # 막대 위에 값 표시
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                f'{height:.2f}',
+                ha='center', va='bottom')
+    
+    plt.tight_layout()
     plt.show()
 
 def generate_wordcloud(menus: list):
@@ -81,9 +92,10 @@ def print_insight_text(summary, category_analysis):
         print("분류 정보가 충분하지 않습니다.")
         
     if category_analysis and not category_analysis['flavor_mean'].empty:
-        top_flavor = category_analysis['flavor_mean'].idxmax()
         print(f"\n[선호하는 맛 프로파일]")
-        print(f"가장 선호하는 맛: {top_flavor}")
+        print("상위 3개 선호 맛:")
+        for flavor, score in category_analysis['flavor_mean'].head(3).items():
+            print(f"- {flavor}: {score:.2f}")
     else:
         print("\n[선호하는 맛 프로파일]")
         print("맛 프로파일 정보가 충분하지 않습니다.")
