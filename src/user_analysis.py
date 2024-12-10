@@ -29,13 +29,13 @@ class UserAnalysis:
         favorite_attributes = favorite_menu_details.drop(columns=["메뉴", "분류", "간편성"]).mean()
         disliked_attributes = disliked_menu_details.drop(columns=["메뉴", "분류", "간편성"]).mean()
 
-       
-        # 대표 메뉴 도출 (상위 N개)
-        representative_menus = favorite_menu_details.head(top_n)
+        # 상위 N개 제한
+        favorite_menus_top_n = favorite_menu_details.head(top_n)["메뉴"].tolist()
+        disliked_menus_top_n = disliked_menu_details.head(top_n)["메뉴"].tolist()
 
         return {
-            "favorite_menus": representative_menus["메뉴"].tolist(),
+            "favorite_menus": favorite_menus_top_n,
             "favorite_attributes": favorite_attributes,
-            "disliked_menus": disliked_menu_details["메뉴"].tolist(),
+            "disliked_menus": disliked_menus_top_n,
             "disliked_attributes": disliked_attributes,
         }
