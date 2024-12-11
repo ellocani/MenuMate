@@ -12,6 +12,7 @@ from src.user_analysis import UserAnalysis
 from src.group_analysis import recommend_menus
 from src.visualizations import visualize_group_recommendations, visualize_user_preferences
 from src.menu_interactive_map import generate_menu_map
+from src.add_user import add_new_user
 
 # 파일 경로 설정
 menu_file_path = "data/processed_menu_details.csv"
@@ -48,12 +49,14 @@ def load_user_preferences(user_name, user_data_path):
 def main():
     while True:
         print("\n=== MenuMate에 오신 것을 환영합니다! ===")
-        print("어떤 작업을 진행하시겠습니까?")
+        print("\n어떤 작업을 진행하시겠습니까?")
         print("1. 개인 레포트 분석 📝")
         print("2. 그룹 메뉴 추천 🍽️")
         print("3. 사용자 선호도 기반 메뉴 지도 생성 🗺️")
         print("4. 유사도 기반 추천 방식에 대해 더 알아보기 🔍")
         print("0. 프로그램 종료 ❌")
+        print("\n=== MenuMate가 처음이신가요?")
+        print("5. 새로운 사용자 데이터 추가 ➕")
         choice = input("작업 번호를 선택해주세요: ")
 
         if choice == "1":
@@ -118,11 +121,6 @@ def main():
                 print(f"\n🗺️ '{user_name}'님의 선호도를 반영한 메뉴 지도가 생성되었습니다!")
             except ValueError as e:
                 print(f"⚠️ 오류 발생: {e}")
-
-        elif choice == "0":
-            # 프로그램 종료
-            print("\nMenuMate를 이용해주셔서 감사합니다! 다음에 또 만나요. 😊")
-            break
         
         elif choice == "4":
             print("[🔍 MenuMate의 추천 알고리즘에 대해 더 알아보기]\n")
@@ -160,7 +158,23 @@ def main():
 
             print("이처럼 MenuMate는 데이터에 기반한 신뢰할 수 있는 추천을 제공합니다! 😊")
 
+        elif choice == "5":
+            # 새로운 사용자 추가
+            user_name = input("\n새로운 사용자의 이름을 입력해주세요: ")
+            try:
+                add_new_user(user_name, user_file_path)
+            except Exception as e:
+                print(f"⚠️ 오류 발생: {e}")    
+                
+        elif choice == "0":
+            # 프로그램 종료
+            print("\nMenuMate를 이용해주셔서 감사합니다! 다음에 또 만나요. 😊")
+            break
             
+
+                
+                
+                
         else:
             print("\n⚠️ 잘못된 번호를 입력하셨습니다. 다시 시도해주세요.")
 
