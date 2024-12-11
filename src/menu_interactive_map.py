@@ -6,18 +6,7 @@ import os
 
 os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 
-# 메뉴 지도 생성 함수
 def generate_menu_map(correlation_matrix_path, user_preferences=None):
-    """
-    메뉴 상관관계 지도를 생성합니다.
-
-    Args:
-        correlation_matrix_path (str): 메뉴 상관관계 행렬 CSV 파일 경로.
-        user_preferences (dict): 사용자의 선호도를 나타내는 딕셔너리. {메뉴: 점수} 형식.
-
-    Returns:
-        fig: Plotly Figure 객체.
-    """
     # 파일 로드
     correlation_matrix = pd.read_csv(correlation_matrix_path, index_col=0)
 
@@ -40,7 +29,7 @@ def generate_menu_map(correlation_matrix_path, user_preferences=None):
     fig = go.Figure()
 
     # 메뉴 간 연결선을 그리기 위해 모든 상관관계 확인
-    threshold = 0.4  # 낮은 임계값 설정
+    threshold = 0.5  # 낮은 임계값 설정
     for i, menu_i in enumerate(correlation_matrix.index):
         for j, menu_j in enumerate(correlation_matrix.columns):
             if i < j and correlation_matrix.iloc[i, j] > threshold:
@@ -50,23 +39,27 @@ def generate_menu_map(correlation_matrix_path, user_preferences=None):
                         y=[df_coordinates.loc[menu_i, "y"], df_coordinates.loc[menu_j, "y"]],
                         mode="lines",
                         line=dict(width=0.5, color="lightgray", dash="solid"),
-                        opacity=0.3,
+                        opacity=0.9,  # 연결선 투명도 증가
                         hoverinfo="none",
                     )
                 )
 
     # 사용자 선호도를 반영한 점 스타일
     marker_sizes = [
-        20 if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else 10
+        25 if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else 12
         for menu in df_coordinates.index
     ]
     marker_opacity = [
-        1.0 if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else 0.3
+        0.9 if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else 0.5
         for menu in df_coordinates.index
     ]
     marker_color = [
-        "gold" if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else colors[cluster]
+        "limegreen" if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else colors[cluster]
         for menu, cluster in zip(df_coordinates.index, df_coordinates["cluster"])
+    ]
+    marker_line_width = [
+        3 if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else 1
+        for menu in df_coordinates.index
     ]
 
     # 메뉴 점 추가
@@ -78,13 +71,14 @@ def generate_menu_map(correlation_matrix_path, user_preferences=None):
             text=df_coordinates.index,
             hovertext=[
                 f"메뉴: {menu}<br>유사한 메뉴: {', '.join(correlation_matrix.loc[menu].sort_values(ascending=False)[1:4].index)}"
+                + (f"<br><b>사용자 선호 메뉴</b>" if user_preferences and menu in user_preferences and user_preferences[menu] == 4 else "")
                 for menu in df_coordinates.index
             ],
             marker=dict(
                 size=marker_sizes,
                 color=marker_color,
                 opacity=marker_opacity,
-                line=dict(width=1, color="black"),
+                line=dict(width=marker_line_width, color="black"),
             ),
             textfont=dict(size=10),
             textposition="top center",
@@ -93,9 +87,9 @@ def generate_menu_map(correlation_matrix_path, user_preferences=None):
 
     # 레이아웃 설정
     fig.update_layout(
-        title="메뉴 간 상관관계 지도 (사용자 선호도 강조)",
-        xaxis=dict(title="PCA 1", showgrid=False, zeroline=False),
-        yaxis=dict(title="PCA 2", showgrid=False, zeroline=False),
+        title="MenuMate의 메뉴 간 상관관계 지도",
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),  # X축 제목 및 눈금 제거
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),  # Y축 제목 및 눈금 제거
         showlegend=False,
         hovermode="closest",
     )

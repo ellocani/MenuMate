@@ -42,7 +42,7 @@ def recommend_menus(user_names, user_data_path, correlation_matrix_path, top_n=3
 
     # 랜덤성 추가
     import numpy as np
-    random_scores = np.random.rand(len(penalized_scores)) * 0.1  # 랜덤 요소 추가
+    random_scores = np.random.rand(len(penalized_scores)) * 0.3  # 랜덤 요소 추가
     recommendation_scores = penalized_scores + random_scores
     recommendation_scores = recommendation_scores.sort_values(ascending=False)
 
