@@ -69,7 +69,7 @@ pip install -r requirements.txt
 3️⃣ **실행하기**
 ```bash
 # MenuMate를 실행해요
-python app.py
+python app/app.py
 ```
 
 
