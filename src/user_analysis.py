@@ -16,7 +16,7 @@ class UserAnalysis:
         """
         # 사용자 이름이 데이터에 있는지 확인
         if user_name not in self.user_data['이름'].values:
-            raise ValueError(f"사용자 '{user_name}'를 데이터에서 찾을 수 없습니다.")
+            raise ValueError(f"사용자 '{user_name}'를 데이터에서 찾을 수 없습니다.\n⚠️ 주의 : 사용자 추가 후에는 프로그램을 재시작 해야합니다!")
 
         # 사용자의 선호도 데이터 추출
         user_row = self.user_data[self.user_data['이름'] == user_name].iloc[:, 1:]
