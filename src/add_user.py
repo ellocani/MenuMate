@@ -21,17 +21,35 @@ def add_new_user(user_name, user_file_path):
     print(f"'{user_name}'님의 선호도를 입력해주세요.")
     print("1~4 사이의 숫자를 입력해주세요. 각 숫자는 메뉴에 대한 선호도 점수를 나타냅니다.")
     print("1 : 싫어하는 메뉴, 2 : 그럭저럭인 메뉴, 3 : 좋아하는 메뉴, 4 : 매우 좋아하는 메뉴")
+    print("⚠️ 진행 중 설문을 종료하려면 'q'를 입력하세요.")
     user_preferences = {}
-    for menu in menu_names:
+    total_menus = len(menu_names)  # 전체 메뉴 개수
+
+    for idx, menu in enumerate(menu_names, start=1):
         while True:
             try:
-                score = int(input(f"'{menu}'에 대한 선호도 (1~4): "))
+                # 진행 상황 출력
+                print(f"\n[{idx}/{total_menus}] '{menu}'에 대한 선호도를 입력해주세요.")
+                response = input(f"  선호도 점수 (1~4 또는 'q' 종료): ")
+                
+                # 종료 옵션 처리
+                if response.lower() == 'q':
+                    print("\n🚪 설문을 종료합니다. 입력된 데이터는 저장되지 않습니다.")
+                    return
+                
+                # 점수 입력 확인
+                score = int(response)
                 if score < 1 or score > 4:
                     raise ValueError("점수는 1에서 4 사이여야 합니다.")
                 user_preferences[menu] = score
                 break
             except ValueError as e:
-                print(f"⚠️ {e}")
+                print(f"⚠️ 올바른 점수를 입력해주세요. {e}")
+
+        # 진행 상황 알림
+        completed = idx
+        remaining = total_menus - completed
+        print(f"✅ 진행 상황: {completed}/{total_menus} 완료, {remaining}개 남음")
 
     # 새로운 유저 데이터 생성
     new_user_row = pd.DataFrame([{**{"이름": user_name}, **user_preferences}])
