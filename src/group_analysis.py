@@ -35,8 +35,15 @@ def recommend_menus(user_names, user_data_path, correlation_matrix_path, top_n=3
 
     # 추천 점수 계산 (상위 유사도 제한 + 다양성 규제)
     weighted_scores = correlation_matrix[list(preferred_menus)] * weight
-    top_correlated_scores = weighted_scores.apply(lambda x: x.nlargest(5).mean(), axis=1)  # 상위 5개 유사도 평균
-    recommendation_scores = top_correlated_scores / (1 + diversity_penalty * correlation_matrix.std(axis=1))  # 다양성 강화
+
+    # 추가 규제: 평균화 및 다양성 보정
+    normalized_scores = weighted_scores.mean(axis=1)  # 평균화
+    penalized_scores = normalized_scores / (1 + diversity_penalty * weighted_scores.std(axis=1))  # 다양성 보정
+
+    # 랜덤성 추가
+    import numpy as np
+    random_scores = np.random.rand(len(penalized_scores)) * 0.1  # 랜덤 요소 추가
+    recommendation_scores = penalized_scores + random_scores
     recommendation_scores = recommendation_scores.sort_values(ascending=False)
 
     # 상위 N개의 메뉴 추천 (선호 메뉴 제외)
