@@ -89,7 +89,7 @@ class UserAnalysis:
         for i, bar in enumerate(taste_profile_data.index):
             axes[0].bar(bar, taste_profile_data.values[i], color=taste_colors[i])
 
-        axes[0].set_title(f"{user_name}님의 맛 프로파일", fontsize=14)
+        axes[0].set_title(f"{user_name}님의 좋아하는 맛", fontsize=14)
         axes[0].set_ylabel("빈도", fontsize=12)
         axes[0].set_xlabel("속성", fontsize=12)
         axes[0].tick_params(axis="x", rotation=45)
@@ -99,8 +99,8 @@ class UserAnalysis:
         for i, category in enumerate(category_counts.index):
             axes[1].bar(category, category_counts.values[i], color=category_colors[i])
 
-        axes[1].set_title(f"{user_name}님의 메뉴 분류 선호도", fontsize=14)
-        axes[1].set_ylabel("빈도 (정규화)", fontsize=12)
+        axes[1].set_title(f"{user_name}님의 메뉴 분류별 선호도", fontsize=14)
+        axes[1].set_ylabel("빈도", fontsize=12)
         axes[1].set_xlabel("분류", fontsize=12)
         axes[1].tick_params(axis="x", rotation=45)
 
@@ -125,7 +125,7 @@ class UserAnalysis:
         ax.set_yticks([])
         ax.set_xticks(radar_angles_taste[:-1])
         ax.set_xticklabels(radar_labels_taste, fontsize=10)
-        ax.set_title(f"{user_name}님의 맛 프로파일 (레이더 차트)", size=16, pad=20)
+        ax.set_title(f"{user_name}님이 선호하는 맛", size=16, pad=20)
 
         plt.tight_layout()
         plt.show()

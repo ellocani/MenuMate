@@ -54,10 +54,10 @@ def main():
         print("2. 그룹 메뉴 추천 🍽️")
         print("3. 사용자 선호도 기반 메뉴 지도 생성 🗺️")
         print("4. 유사도 기반 추천 방식에 대해 더 알아보기 🔍")
-        print("0. 프로그램 종료 ❌")
-        print("\n=== MenuMate가 처음이신가요?")
-        print("5. 새로운 사용자 데이터 추가 ➕")
-        choice = input("작업 번호를 선택해주세요: ")
+        print("\n0. 프로그램 종료 ❌")
+        print("\n=== MenuMate가 처음이신가요? ===")
+        print("\n5. 새로운 사용자 데이터 추가 ➕")
+        choice = input("\n작업 번호를 선택해주세요: ")
 
         if choice == "1":
             # 개인 레포트 분석
@@ -113,13 +113,13 @@ def main():
             except ValueError as e:
                 print(f"⚠️ 오류 발생: {e}")
 
-
-
         elif choice == "2":
             # 그룹 메뉴 추천
             group_names = input("\n추천할 그룹의 사용자 이름을 ','로 구분하여 입력해주세요: ").split(",")
             try:
-                recommended_menus = recommend_menus(group_names, user_file_path, correlation_matrix_path, top_n=3, top_reasons=10)
+                recommended_menus, random_recommendations = recommend_menus(
+                    group_names, user_file_path, correlation_matrix_path, top_n=3, top_reasons=10
+                )
 
                 # 추가 설명
                 print("\n[🍴 MenuMate의 추천 알고리즘 🍴]")
@@ -136,9 +136,17 @@ def main():
                         f"  ▶ 추천 이유 (상위 10개 유사 메뉴):\n"
                         f"     {recommendation['reason']}"
                     )
+
+                # 랜덤 추천 메뉴 출력
+                print("\n[🎲 오늘의 랜덤 추천 메뉴 🎲]")
+                print("👉 오늘은 이런 메뉴를 도전해보는 건 어떨까요?")
+                for idx, menu in enumerate(random_recommendations, start=1):
+                    print(f"  ⭐ {idx}. {menu}")
+
                 print("\n👉 다음 식사에서 새로운 메뉴를 시도해 보세요! MenuMate가 함께합니다. 😊")
             except ValueError as e:
                 print(f"⚠️ 오류 발생: {e}")
+
 
         elif choice == "3":
             # 사용자 선호도 기반 메뉴 지도 생성
@@ -169,7 +177,7 @@ def main():
 
         
         elif choice == "4":
-            print("[🔍 MenuMate의 추천 알고리즘에 대해 더 알아보기]\n")
+            print("\n[🔍 MenuMate의 추천 알고리즘에 대해 더 알아보기]\n")
 
             print("MenuMate는 사용자 선호도와 메뉴 간 유사도를 기반으로 최적의 메뉴를 추천합니다.")
             print("이 과정은 다음과 같은 단계로 이루어집니다:\n")
