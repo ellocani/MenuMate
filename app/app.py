@@ -9,13 +9,14 @@ sys.path.insert(0, project_root)
 # 절대 경로로 import
 from src.data_loader import DataLoader
 from src.user_analysis import UserAnalysis
-from src.group_analysis import GroupAnalysis, recommend_menus_with_attributes, align_menu_and_user_data
+from src.group_analysis import recommend_menus
 from src.visualizations import visualize_group_recommendations, visualize_user_preferences
 from src.menu_interactive_map import generate_menu_map
 
 # 파일 경로 설정
 menu_file_path = "data/processed_menu_details.csv"
 user_file_path = "data/processed_user_data.csv"
+raw_menu_data = "data\menu_details.csv"
 correlation_matrix_path = "data/menu_correlation_matrix.csv"
 
 # 데이터 로드
@@ -46,63 +47,65 @@ def load_user_preferences(user_name, user_data_path):
 # 메인 함수
 def main():
     while True:
-        print("\n=== MenuMate 실행 ===")
-        print("1. 개인 레포트 분석")
-        print("2. 그룹 메뉴 추천")
-        print("3. 사용자 선호도 기반 메뉴 지도 생성")  # 새로운 옵션 추가
-        print("0. 종료")
-        choice = input("선택할 작업 번호를 입력하세요: ")
+        print("\n=== MenuMate에 오신 것을 환영합니다! ===")
+        print("어떤 작업을 진행하시겠습니까?")
+        print("1. 개인 레포트 분석 📝")
+        print("2. 그룹 메뉴 추천 🍽️")
+        print("3. 사용자 선호도 기반 메뉴 지도 생성 🗺️")
+        print("4. 유사도 기반 추천 방식에 대해 더 알아보기 🔍")
+        print("0. 프로그램 종료 ❌")
+        choice = input("작업 번호를 선택해주세요: ")
 
         if choice == "1":
             # 개인 레포트 분석
-            user_name = input("\n분석할 사용자 이름을 입력하세요: ")
+            user_name = input("\n분석할 사용자의 이름을 입력해주세요: ")
             user_analysis = UserAnalysis(menu_data, user_data)
             try:
                 # 사용자 분석 결과
                 analysis_results = user_analysis.analyze_user(user_name, top_n=5)
 
-                # 개인 분석 결과 출력
-                print(f"\n'{user_name}' 사용자의 대표 선호 메뉴:")
-                print(analysis_results["favorite_menus"])
-
-                print(f"\n'{user_name}' 사용자의 대표 기피 메뉴:")
-                print(analysis_results["disliked_menus"])
+                print("\n📊 [개인 레포트 분석 결과]")
+                print(f"'{user_name}'님이 가장 선호하는 메뉴는:")
+                for menu in analysis_results["favorite_menus"]:
+                    print(f"  - {menu}")
+                print(f"\n'{user_name}'님이 기피하는 메뉴는:")
+                for menu in analysis_results["disliked_menus"]:
+                    print(f"  - {menu}")
 
                 # 시각화 저장
                 visualize_user_preferences(user_name, analysis_results, save_path=f"{user_name}_analysis")
-                print(f"'{user_name}'의 분석 결과가 저장되었습니다.")
+                print(f"\n분석 결과가 '{user_name}_analysis' 파일로 저장되었습니다. 😊")
             except ValueError as e:
-                print(f"오류 발생: {e}")
+                print(f"⚠️ 오류 발생: {e}")
 
         elif choice == "2":
             # 그룹 메뉴 추천
-            group_names = input("\n분석할 그룹의 사용자 이름을 ','로 구분하여 입력하세요: ").split(",")
+            group_names = input("\n추천할 그룹의 사용자 이름을 ','로 구분하여 입력해주세요: ").split(",")
             try:
-                # 메뉴 데이터와 사용자 데이터 매핑
-                aligned_menu_data, aligned_user_data = align_menu_and_user_data(menu_data, user_data)
+                recommended_menus = recommend_menus(group_names, user_file_path, correlation_matrix_path, top_n=3, top_reasons=10)
 
-                # 그룹 추천 메뉴
-                recommended_menus = recommend_menus_with_attributes(
-                    aligned_menu_data, aligned_user_data, group_names, top_n=5
-                )
+                # 추가 설명
+                print("\n[🍴 MenuMate의 추천 알고리즘 🍴]")
+                print("MenuMate는 메뉴 간 상관계수를 활용해, 여러분의 선호도를 분석한 뒤 가장 적합한 메뉴를 추천합니다.")
+                print("상관계수는 메뉴 간의 선호도 패턴을 바탕으로 얼마나 비슷한지를 나타내며, 1에 가까울수록 유사도가 높습니다.")
+                print("\n아래는 여러분의 그룹 선호도를 반영한 최고의 추천 메뉴입니다. 😋")
 
-                # 추천 결과 출력
-                print("\n추천 메뉴:")
-                print(recommended_menus)
-
-                # 추천 결과 시각화 저장
-                visualize_group_recommendations(
-                    recommended_menus,
-                    group_name=", ".join(group_names),
-                    save_path="content_based_recommendations.png"
-                )
-                print("그룹 추천 메뉴 시각화가 저장되었습니다.")
+                # 추천 메뉴 출력
+                print("\n[🍽 추천 메뉴 🍽]")
+                for idx, recommendation in enumerate(recommended_menus, start=1):
+                    print(
+                        f"\n⭐ {idx}. {recommendation['menu']}\n"
+                        f"  ▶ 추천 점수: {recommendation['score']:.2f}\n"
+                        f"  ▶ 추천 이유 (상위 10개 유사 메뉴):\n"
+                        f"     {recommendation['reason']}"
+                    )
+                print("\n👉 다음 식사에서 새로운 메뉴를 시도해 보세요! MenuMate가 함께합니다. 😊")
             except ValueError as e:
-                print(f"오류 발생: {e}")
+                print(f"⚠️ 오류 발생: {e}")
 
         elif choice == "3":
             # 사용자 선호도 기반 메뉴 지도 생성
-            user_name = input("\n메뉴 지도를 생성할 사용자 이름을 입력하세요: ")
+            user_name = input("\n메뉴 지도를 생성할 사용자의 이름을 입력해주세요: ")
             try:
                 # 사용자 선호도 로드
                 user_preferences = load_user_preferences(user_name, user_file_path)
@@ -112,17 +115,56 @@ def main():
 
                 # 시각화 표시
                 fig.show()
-                print(f"'{user_name}'의 선호도를 반영한 메뉴 지도가 생성되었습니다.")
+                print(f"\n🗺️ '{user_name}'님의 선호도를 반영한 메뉴 지도가 생성되었습니다!")
             except ValueError as e:
-                print(f"오류 발생: {e}")
+                print(f"⚠️ 오류 발생: {e}")
 
         elif choice == "0":
             # 프로그램 종료
-            print("프로그램을 종료합니다.")
+            print("\nMenuMate를 이용해주셔서 감사합니다! 다음에 또 만나요. 😊")
             break
+        
+        elif choice == "4":
+            print("[🔍 MenuMate의 추천 알고리즘에 대해 더 알아보기]\n")
 
+            print("MenuMate는 사용자 선호도와 메뉴 간 유사도를 기반으로 최적의 메뉴를 추천합니다.")
+            print("이 과정은 다음과 같은 단계로 이루어집니다:\n")
+
+            print("1️⃣ **메뉴 간의 유사도 계산**")
+            print("- MenuMate는 메뉴의 맛, 재료, 요리 방식, 선호도 데이터를 활용하여 메뉴 간의 '유사도'를 계산합니다.")
+            print("- 유사도는 0에서 1 사이의 값으로 나타나며, 1에 가까울수록 두 메뉴는 매우 비슷하다는 의미입니다.\n")
+
+            print("예를 들어:")
+            print("  - 고등어조림과 닭갈비의 유사도: 0.61")
+            print("  - 고등어조림과 제육볶음의 유사도: 0.61")
+            print("  - 고등어조림과 매운탕의 유사도: 0.55\n")
+
+            print("2️⃣ **사용자 선호도를 반영**")
+            print("- 입력된 사용자(예: 권민혁, 연누, 야옹)의 선호 데이터를 분석합니다.")
+            print("- 사용자가 좋아하는 메뉴(예: 닭갈비, 제육볶음)와 비슷한 메뉴를 찾습니다.\n")
+
+            print("3️⃣ **추천 메뉴 도출**")
+            print("- 고등어조림은 닭갈비(0.61), 제육볶음(0.61), 매운탕(0.55)과 높은 유사도를 보이며, 총점이 가장 높기 때문에 추천됩니다.\n")
+
+            print("[💡 유사도가 의미하는 것]")
+            print("- 유사도(예: 닭갈비와 고등어조림의 유사도 0.61)는 두 메뉴의 특성이 얼마나 비슷한지를 나타냅니다.")
+            print("예를 들어:")
+            print("  - **재료**: 매콤한 양념, 비슷한 재료")
+            print("  - **요리 방식**: 조림, 볶음")
+            print("  - **선호도 데이터**: 다른 사용자들이 함께 좋아하는 경우\n")
+
+            print("[🤔 왜 유사도를 보여줄까요?]")
+            print("- **추천 과정의 투명성**: '왜 이 메뉴가 추천되었는지' 명확히 알 수 있습니다.")
+            print("- **선택의 폭 제공**: 고등어조림뿐만 아니라 닭갈비, 제육볶음 같은 비슷한 메뉴도 고려할 수 있습니다.")
+            print("- **추천 신뢰도 강화**: '내가 좋아하는 메뉴와 비슷하네!'라는 납득을 제공합니다.\n")
+
+            print("이처럼 MenuMate는 데이터에 기반한 신뢰할 수 있는 추천을 제공합니다! 😊")
+
+            
         else:
-            print("올바른 번호를 입력하세요.")
+            print("\n⚠️ 잘못된 번호를 입력하셨습니다. 다시 시도해주세요.")
+
+        
 
 # 프로그램 실행
 if __name__ == "__main__":
