@@ -18,7 +18,7 @@ from src.user_details import UserDetails
 # 파일 경로 설정
 menu_file_path = "data/processed_menu_details.csv"
 user_file_path = "data/processed_user_data.csv"
-raw_menu_data = "data\menu_details.csv"
+raw_menu_data = "data/menu_details.csv"
 correlation_matrix_path = "data/menu_correlation_matrix.csv"
 
 # 데이터 로드
