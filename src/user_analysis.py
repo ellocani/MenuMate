@@ -1,6 +1,6 @@
-import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 class UserAnalysis:
     def __init__(self, menu_data, user_data):
@@ -20,18 +20,22 @@ class UserAnalysis:
         # 사용자의 선호도 데이터 추출
         user_row = self.user_data[self.user_data['이름'] == user_name].iloc[:, 1:]
 
-        # 3점 이상인 메뉴(선호하는 메뉴)
-        favorite_menus = user_row.loc[:, (user_row >= 3).any()].columns.tolist()
-        # 2점 이하인 메뉴(기피하는 메뉴)
-        disliked_menus = user_row.loc[:, (user_row <= 2).any()].columns.tolist()
+        # 4점인 메뉴(선호하는 메뉴)
+        favorite_menus = user_row.loc[:, (user_row == 4).any()].columns.tolist()
+        # 1점인 메뉴(기피하는 메뉴)
+        disliked_menus = user_row.loc[:, (user_row == 1).any()].columns.tolist()
 
         # 선호 메뉴와 기피 메뉴의 상세 정보
         favorite_menu_details = self.menu_data[self.menu_data['메뉴'].isin(favorite_menus)]
         disliked_menu_details = self.menu_data[self.menu_data['메뉴'].isin(disliked_menus)]
 
+        # 속성 정규화
+        normalized_menu_data = self.menu_data.drop(columns=["메뉴", "분류", "간편성"])
+        normalized_menu_data = normalized_menu_data.div(normalized_menu_data.sum(axis=0), axis=1)
+
         # 선호 속성과 기피 속성 요약
-        favorite_attributes = favorite_menu_details.drop(columns=["메뉴", "분류", "간편성"]).mean()
-        disliked_attributes = disliked_menu_details.drop(columns=["메뉴", "분류", "간편성"]).mean()
+        favorite_attributes = normalized_menu_data.loc[favorite_menu_details.index].mean()
+        disliked_attributes = normalized_menu_data.loc[disliked_menu_details.index].mean()
 
         # 상위 N개 제한
         favorite_menus_top_n = favorite_menu_details.head(top_n)["메뉴"].tolist()
@@ -46,7 +50,7 @@ class UserAnalysis:
 
     def visualize_user_preferences(self, user_name, top_k=10):
         """
-        특정 사용자의 선호 속성 중 "맛 프로파일", "조리 방식", "주재료"를 각각 시각화
+        특정 사용자의 선호 속성 중 "맛 프로파일"와 "조리 방식"을 시각화
         :param user_name: 분석할 사용자 이름
         :param top_k: 시각화할 상위 속성 개수
         """
@@ -57,24 +61,20 @@ class UserAnalysis:
         attributes_to_visualize = {
             "맛 프로파일": [col for col in self.menu_data.columns if "맛 프로파일" in col],
             "조리 방식": [col for col in self.menu_data.columns if "조리 방식" in col],
-            "주재료": [col for col in self.menu_data.columns if "주재료" in col],
         }
 
         # 플롯 생성
-        fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+        fig, axes = plt.subplots(1, len(attributes_to_visualize), figsize=(12, 6))
         for idx, (attribute_name, columns) in enumerate(attributes_to_visualize.items()):
             attributes_data = analysis_results["favorite_attributes"].filter(items=columns)
+            # 최소 3개 이상 등장하는 속성 필터링
+            attributes_data = attributes_data[attributes_data >= 0.003]
             # 접두사 제거 및 데이터 정렬
             attributes_data.index = attributes_data.index.str.replace(f"{attribute_name}_", "")
             attributes_data = attributes_data.sort_values(ascending=False).head(top_k)
 
             # Seaborn 막대 그래프 생성
-            sns.barplot(
-                x=attributes_data.index,
-                y=attributes_data.values,
-                palette="viridis",
-                ax=axes[idx]
-            )
+            sns.barplot(x=attributes_data.index, y=attributes_data.values, palette="viridis", ax=axes[idx])
             axes[idx].set_title(f"{user_name}님의 {attribute_name}")
             axes[idx].set_ylabel("빈도")
             axes[idx].set_xlabel("속성")
