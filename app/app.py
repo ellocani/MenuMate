@@ -75,11 +75,12 @@ def main():
                 for menu in analysis_results["disliked_menus"]:
                     print(f"  - {menu}")
 
-                # 시각화 저장
-                visualize_user_preferences(user_name, analysis_results, save_path=f"{user_name}_analysis")
-                print(f"\n분석 결과가 '{user_name}_analysis' 파일로 저장되었습니다. 😊")
+                # 시각화 바로 표시
+                user_analysis.visualize_user_preferences(user_name)
+                print(f"\n분석 결과를 화면에 표시했습니다. 😊")
             except ValueError as e:
                 print(f"⚠️ 오류 발생: {e}")
+
 
         elif choice == "2":
             # 그룹 메뉴 추천
