@@ -67,19 +67,52 @@ def main():
                 # 사용자 분석 결과
                 analysis_results = user_analysis.analyze_user(user_name, top_n=5)
 
-                print("\n📊 [개인 레포트 분석 결과]")
-                print(f"'{user_name}'님이 가장 선호하는 메뉴는:")
-                for menu in analysis_results["favorite_menus"]:
-                    print(f"  - {menu}")
-                print(f"\n'{user_name}'님이 기피하는 메뉴는:")
-                for menu in analysis_results["disliked_menus"]:
-                    print(f"  - {menu}")
+                # 텍스트로 분석 결과 출력
+                print("\n📊 [개인 취향 분석 결과]")
+                print(f"'{user_name}'님의 개인 취향 분석 결과는 다음과 같습니다.\n")
+
+                print("[1️⃣ 선호하는 메뉴]")
+                if analysis_results["favorite_menus"]:
+                    print(f"'{user_name}'님이 가장 선호하는 메뉴는 다음과 같습니다:")
+                    for menu in analysis_results["favorite_menus"]:
+                        print(f"  - {menu}")
+                else:
+                    print("  - 선호하는 메뉴가 없습니다.")
+
+                print("\n[2️⃣ 기피하는 메뉴]")
+                if analysis_results["disliked_menus"]:
+                    print(f"'{user_name}'님이 기피하는 메뉴는 다음과 같습니다:")
+                    for menu in analysis_results["disliked_menus"]:
+                        print(f"  - {menu}")
+                else:
+                    print("  - 기피하는 메뉴가 없습니다.")
+
+                print("\n[3️⃣ 맛 프로파일 분석]")
+                taste_profile = analysis_results["favorite_attributes"].filter(like="맛 프로파일").sort_values(ascending=False).head(5)
+                if not taste_profile.empty:
+                    print(f"'{user_name}'님이 선호하는 맛 프로파일은 다음과 같습니다:")
+                    for flavor, value in taste_profile.items():
+                        flavor_name = flavor.replace("맛 프로파일_", "")
+                        print(f"  - {flavor_name}: {value * 100:.2f}")
+                else:
+                    print("  - 선호하는 맛 프로파일 데이터가 없습니다.")
+
+                print("\n[4️⃣ 메뉴 분류 분석]")
+                category_counts = analysis_results["favorite_menu_details"]["분류"].value_counts(normalize=True)
+                if not category_counts.empty:
+                    print(f"'{user_name}'님이 선호하는 메뉴 분류는 다음과 같습니다:")
+                    for category, value in category_counts.items():
+                        print(f"  - {category}: {value * 100:.2f}%")
+                else:
+                    print("  - 선호하는 메뉴 분류 데이터가 없습니다.")
 
                 # 시각화 바로 표시
                 user_analysis.visualize_user_preferences(user_name)
-                print(f"\n분석 결과를 화면에 표시했습니다. 😊")
+                print(f"\n분석 결과를 화면에 시각적으로 표시했습니다. 😊")
+
             except ValueError as e:
                 print(f"⚠️ 오류 발생: {e}")
+
 
 
         elif choice == "2":

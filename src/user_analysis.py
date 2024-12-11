@@ -83,15 +83,22 @@ class UserAnalysis:
 
         # 바 차트 생성
         fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-        sns.barplot(x=taste_profile_data.index, y=taste_profile_data.values, ax=axes[0], palette=taste_palette)
-        axes[0].bar_label(axes[0].containers[0])
+
+        # 맛 프로파일 바 차트
+        taste_colors = generate_color_palette(taste_profile_data, "green")
+        for i, bar in enumerate(taste_profile_data.index):
+            axes[0].bar(bar, taste_profile_data.values[i], color=taste_colors[i])
+
         axes[0].set_title(f"{user_name}님의 맛 프로파일", fontsize=14)
         axes[0].set_ylabel("빈도", fontsize=12)
         axes[0].set_xlabel("속성", fontsize=12)
         axes[0].tick_params(axis="x", rotation=45)
 
-        sns.barplot(x=category_counts.index, y=category_counts.values, ax=axes[1], palette=category_palette)
-        axes[1].bar_label(axes[1].containers[0])
+        # 메뉴 분류 바 차트
+        category_colors = generate_color_palette(category_counts, "green")
+        for i, category in enumerate(category_counts.index):
+            axes[1].bar(category, category_counts.values[i], color=category_colors[i])
+
         axes[1].set_title(f"{user_name}님의 메뉴 분류 선호도", fontsize=14)
         axes[1].set_ylabel("빈도 (정규화)", fontsize=12)
         axes[1].set_xlabel("분류", fontsize=12)
@@ -99,6 +106,7 @@ class UserAnalysis:
 
         plt.tight_layout()
         plt.show()
+
 
         # 레이더 차트 생성 (맛 프로파일)
         radar_taste_data = taste_profile_data.copy()
